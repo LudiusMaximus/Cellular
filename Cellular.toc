@@ -1,0 +1,14 @@
+## Interface: 110200, 50500, 11507
+## Version: @project-version@
+## Title: Cellular
+## Author: TotalPackage, LudiusMaximus, Toxxnorr
+## Notes: Instant messenger for whispers.
+
+## SavedVariables: CellularDB
+## SavedVariablesPerCharacter: CellularCharDB, Cellular_History
+
+## X-Curse-Project-ID: 20146
+
+
+embeds.xml
+Core.lua
