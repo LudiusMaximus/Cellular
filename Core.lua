@@ -2,9 +2,11 @@ local Cellular = CreateFrame("Frame", "Cellular", UIParent)
 local a = Cellular
 local smed = LibStub("LibSharedMedia-3.0")
 
-local _G = getfenv(0)
+local _G = _G
 local format, gsub, strmatch, gmatch = format, gsub, strmatch, gmatch
-local cfeb, ChatFrame_GetMessageEventFilters = ChatFrame10EditBox or ChatFrame1EditBox, ChatFrame_GetMessageEventFilters
+--local cfeb, ChatFrame_GetMessageEventFilters = ChatFrame10EditBox or ChatFrame1EditBox, ChatFrame_GetMessageEventFilters
+local cfeb = ChatEdit_GetActiveWindow() or DEFAULT_CHAT_FRAME.editBox
+local GetMessageEventFilters = C_ChatInfo and C_ChatInfo.GetMessageEventFilters
 
 local db, svar
 local you, attached, lastwindow, currenttab, eb
@@ -136,7 +138,7 @@ end
 --------------------------------------
 --- EVENTS
 local function Filter(event, a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14)
-  local cfilter = ChatFrame_GetMessageEventFilters(event)
+  local cfilter = GetMessageEventFilters and GetMessageEventFilters(event)
   if cfilter then  -- filter
     for _, filterFunc in next, cfilter do
       local filter, n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n13,n14 = filterFunc(a, event, a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14)
@@ -149,11 +151,12 @@ local function Filter(event, a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14)
   end
   if a7 < 1 or (a7 >= 1 and _G.CHAT_SHOW_ICONS ~= "0") then  -- chat icons
     for tag in gmatch(a1, "%b{}") do
-      local termlist = ICON_TAG_LIST[ strlower(gsub(tag, "[{}]", "")) ]
-      local icon = termlist and ICON_LIST[termlist]
-      if icon then
-        a1 = gsub(a1, tag, icon.."0|t")
-      end
+      --local termlist = ICON_TAG_LIST[ strlower(gsub(tag, "[{}]", "")) ]
+      --local icon = termlist and ICON_LIST[termlist]
+      --if icon then
+      --  a1 = gsub(a1, tag, icon.."0|t")
+      --end
+      a1 = C_ChatInfo.ReplaceIconTags(a1)
     end
   end
   return a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14
@@ -179,8 +182,9 @@ end
 ---------------------------------------
 function a:CHAT_MSG_WHISPER_INFORM(...)
 ---------------------------------------
-  local a1, a2 = Filter("CHAT_MSG_WHISPER_INFORM", ...)
-  if a2 and (not GMChatFrame_IsGM or not GMChatFrame_IsGM(a2)) then  -- don't handle GM whispers
+  local a1, a2, _, _, _, a6 = Filter("CHAT_MSG_WHISPER_INFORM", ...)
+  -- if a2 and (not GMChatFrame_IsGM or not GMChatFrame_IsGM(a2)) then  -- don't handle GM whispers
+  if not a2 or a6 ~= "GM" then  -- don't handle GM whispers (new version)
     a:OutgoingMessage(a2, a1)
   end
 end
@@ -343,6 +347,7 @@ local function AttachEditBox(id, skiptext, skipset)  -- attach the main chat edi
   else
     if tab.name and tab.name ~= "" then
       local editBox = ChatEdit_ChooseBoxForSend()
+      if not editBox then return end
       local lastTell, lastTellType = ChatEdit_GetLastTellTarget();
       if lastTell then
         editBox:SetAttribute("chatType", lastTellType)
@@ -460,7 +465,13 @@ do
     local battleTag, presenceName, _, toonName
     name = gsub(name, "-" .. realmName, "")
     if isbn then
-      _, presenceName, battleTag, _, toonName = C_BattleNet.GetAccountInfoByID(isbn)
+      -- _, presenceName, battleTag, _, toonName = C_BattleNet.GetAccountInfoByID(isbn)
+      local infoBN = C_BattleNet.GetAccountInfoByID(isbn)
+			if infoBN then
+				battleTag = infoBN.battleTag
+				presenceName = infoBN.accountName
+				toonName = infoBN.characterName
+			end
     end
     local f = HandleWindow(name, special, text, battleTag)
     if not f then return end
@@ -544,7 +555,13 @@ do
     local battleTag, presenceName, _, toonName
     name = gsub(name, "-" .. realmName, "")
     if isbn then
-      _, presenceName, battleTag, _, toonName = C_BattleNet.GetAccountInfoByID(isbn)
+      -- _, presenceName, battleTag, _, toonName = C_BattleNet.GetAccountInfoByID(isbn)
+      local infoBN = C_BattleNet.GetAccountInfoByID(isbn)
+			if infoBN then
+				battleTag = infoBN.battleTag
+				presenceName = infoBN.accountName
+				toonName = infoBN.characterName
+			end
     end
     local f = HandleWindow(name, nil, text, battleTag)
     if not f then return end
