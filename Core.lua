@@ -115,7 +115,7 @@ function a:ADDON_LOADED(a1)
   CONFIGMODE_CALLBACKS = CONFIGMODE_CALLBACKS or {}
   CONFIGMODE_CALLBACKS.Cellular = function(action, mode)
     if action == "ON" then
-      SendChatMessage("Hey self, entering cheap config mode.", "WHISPER", nil, you)
+      print("|cff00ff00Cellular|r: Entering config mode.")
     end
   end
 
@@ -149,7 +149,7 @@ local function Filter(event, a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14)
       end
     end
   end
-  if a7 < 1 or (a7 >= 1 and _G.CHAT_SHOW_ICONS ~= "0") then  -- chat icons
+  if a7 < 1 or (a7 >= 1 and (_G.CHAT_SHOW_ICONS == nil or _G.CHAT_SHOW_ICONS ~= "0")) then  -- chat icons
     for tag in gmatch(a1, "%b{}") do
       --local termlist = ICON_TAG_LIST[ strlower(gsub(tag, "[{}]", "")) ]
       --local icon = termlist and ICON_LIST[termlist]
