@@ -612,7 +612,7 @@ do
   local function Busy(this)
     local bm = db.busymessage
     if bm and bm ~= "" then
-      SendChatMessage(bm, "WHISPER", nil, tabs[this:GetParent().tab].name)
+      C_ChatInfo.SendChatMessage(bm, "WHISPER", nil, tabs[this:GetParent().tab].name)
     end
   end
   local function Social(this)
