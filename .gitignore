@@ -2,3 +2,4 @@ Libs/
 /release.bat
 /.release
 /.vscode
+/.luarc.json
