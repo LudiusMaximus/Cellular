@@ -43,6 +43,7 @@ function a:ADDON_LOADED(a1)
       width = 340, height = 160,
       pos = { },
       alpha = 0.9,
+      bglist = "background",
       bg = "Tooltip",
       bgcolor = { 0, 0, 0, 1, },
       border = "Blizzard Tooltip",
@@ -592,16 +593,20 @@ end
 -- button functions
 local buttons
 local function ApplyFont(t, font, fontsize, fontstyle)
-  if (not fontstyle) then
-    fontstyle = "OUTLINE, MONOCHROME"
+  local flags = ""
+  if not fontstyle then
+    fontstyle = "OUTLINE,MONOCHROME"
   end
 
   if fontstyle == "Shadow" then
-    t:SetFont(smed:Fetch("font", font), fontsize)
+    t:SetFont(smed:Fetch("font", font), fontsize, "")
     t:SetShadowColor(0, 0, 0, 0.7)
     t:SetShadowOffset(1, -1)
   else
-    t:SetFont(smed:Fetch("font", font), fontsize, fontstyle ~= "None" and fontstyle or "")
+    if fontstyle ~= "None" then
+      flags = gsub(fontstyle, "%s+", "")
+    end
+    t:SetFont(smed:Fetch("font", font), fontsize, flags)
     t:SetShadowOffset(0, 0)
   end
 end
@@ -752,9 +757,13 @@ end
 local bdt = { tileSize = 16, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4, }, }
 local bdt2 = { bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, }
 local function UpdateBaseVars(f)  -- updates main window's variable settings
-  bdt.bgFile = smed:Fetch(db.bglist or "statusbar", db.bg)
+  bdt.bgFile = smed:Fetch(db.bglist or "background", db.bg)
+    or smed:Fetch("background", db.bg)
+    or smed:Fetch("statusbar", db.bg)
+    or "Interface\\Tooltips\\UI-Tooltip-Background"
   bdt.tile = (db.bg == "Tooltip")
   bdt.edgeFile = smed:Fetch("border", db.border)
+  f:SetBackdrop(nil)
   f:SetBackdrop(bdt)
   f:SetBackdropColor(unpack(db.bgcolor))
   f:SetBackdropBorderColor(unpack(db.bordercolor))
@@ -1198,6 +1207,13 @@ ShowOptions = function(a1, id)
         end
       else
         db[a1] = tonumber(b.value) or b.value
+        if a1 == "bglist" then
+          local bg = db.bg and smed:Fetch(db.bglist, db.bg)
+          if not bg then
+            local t = smed:List(db.bglist)
+            db.bg = t and t[1] or "Tooltip"
+          end
+        end
         local level, num = strmatch(b:GetName(), "DropDownList(%d+)Button(%d+)")
         level, num = tonumber(level) or 0, tonumber(num) or 0
         for i = 1, UIDROPDOWNMENU_MAXBUTTONS, 1 do
@@ -1214,10 +1230,17 @@ ShowOptions = function(a1, id)
       if not dbc then return end
       if a1 then
         local pv = ColorPickerFrame.previousValues
-        dbc[1], dbc[2], dbc[3], dbc[4] = pv.r, pv.g, pv.b, 1 - pv.opacity
+        dbc[1], dbc[2], dbc[3], dbc[4] = pv.r, pv.g, pv.b, pv.opacity
       else
         dbc[1], dbc[2], dbc[3] = ColorPickerFrame:GetColorRGB()
-        dbc[4] = 1 - OpacitySliderFrame:GetValue()
+        local opacity = ColorPickerFrame.opacity or 0
+        if ColorPickerFrame.GetColorAlpha then
+          opacity = ColorPickerFrame:GetColorAlpha()
+        end
+        if OpacitySliderFrame and OpacitySliderFrame.GetValue then
+          opacity = OpacitySliderFrame:GetValue()
+        end
+        dbc[4] = opacity
       end
       UpdateSettings()
     end
@@ -1246,7 +1269,7 @@ ShowOptions = function(a1, id)
       if not dbc then return end
       info.hasColorSwatch = true
       info.hasOpacity = 1
-      info.r, info.g, info.b, info.opacity = dbc[1], dbc[2], dbc[3], 1 - (dbc[4] or 1)
+      info.r, info.g, info.b, info.opacity = dbc[1], dbc[2], dbc[3], dbc[4] or 1
       info.swatchFunc, info.opacityFunc, info.cancelFunc = SetColor, SetColor, SetColor
       info.value = value
       info.notCheckable = 1
@@ -1377,7 +1400,7 @@ ShowOptions = function(a1, id)
           AddSelect(lvl, "background", sub, "background")
           AddSelect(lvl, "statusbar", sub, "statusbar")
         elseif sub == "bg" then
-          local t = smed:List(db.bglist or "statusbar")
+          local t = smed:List(db.bglist or "background")
           AddFakeSlider(lvl, sub, 1, #t, 1, t)
         elseif sub == "fonttitle" or sub == "fontmsg" then
           local t = smed:List("font")
