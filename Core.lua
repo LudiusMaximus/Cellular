@@ -541,6 +541,7 @@ do
     if ctime > lastTell + 2 then  -- support for whisper sound alerts
       if a.pratloaded and Prat.Addon:GetModule("Sounds", true) then
         a.PLAYERLINK = name
+        a.PLAYERLINKRAW = name
         Prat.Addon:GetModule("Sounds", true):Prat_PostAddMessage(nil, a, nil, "CHAT_MSG_WHISPER")
       elseif ChatSounds_InitConfig then
         ChatSounds_PlaySound(ChatSounds_Config[ChatSounds_Player].Incoming["WHISPER"])
@@ -579,6 +580,7 @@ do
     HandleHistory(name, you, text, battleTag)
     if a.pratloaded and Prat.Addon:GetModule("Sounds", true) then
       a.PLAYERLINK = you
+      a.PLAYERLINKRAW = you
       Prat.Addon:GetModule("Sounds", true):Prat_PostAddMessage(nil, a, nil, "CHAT_MSG_WHISPER_INFORM")
     elseif ChatSounds_InitConfig then
       ChatSounds_PlaySound(ChatSounds_Config[ChatSounds_Player].Outgoing["WHISPER"])

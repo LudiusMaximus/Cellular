@@ -1,4 +1,4 @@
-## Interface: 120100
+## Interface: 120105, 50504, 11509
 ## Version: @project-version@
 ## Title: Cellular
 ## Author: TotalPackage, LudiusMaximus, Toxxnorr
